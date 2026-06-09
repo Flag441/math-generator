@@ -1,0 +1,22 @@
+# OSが自動生成する隠しファイル
+.DS_Store
+Thumbs.db
+
+# Word, PowerPoint, Excel の一時ファイル
+~$*.doc*
+~$*.ppt*
+~$*.xls*
+
+# LaTeX のコンパイル時に生成される中間ファイル
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# 後でプログラミング言語（Python等）を追加した時用の環境変数ファイル
+*.env
