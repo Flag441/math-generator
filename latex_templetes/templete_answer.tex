@@ -1,0 +1,177 @@
+\documentclass[a4paper, 11pt]{jsarticle}
+\usepackage{amsmath, amssymb}
+\usepackage[top=20mm, bottom=30mm, left=20mm, right=20mm, footskip=10mm]{geometry}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{xcolor} % ←追加：文字色を変更するためのパッケージ
+
+% ==========================================
+% 2段組みのレイアウト調整
+% ==========================================
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{1.5cm}
+
+\begin{document}
+\pagestyle{empty}
+
+% --- ヘッダー部分 ---
+\begin{center}
+    {\Large \textbf{二次関数\quad グラフと$x$軸の共有点を求める問題 {\color{red}【解答】}}}
+\end{center}
+\begin{flushright}
+    年\hspace{1cm}組\hspace{1cm}番\hspace{1cm}氏名\hspace*{3.5cm}
+\end{flushright}
+\vspace{3mm}
+
+% --- 問題の指示文 ---
+\noindent\textbf{問題：} 次の二次関数のグラフと $x$ 軸の共有点の座標を求めよ。
+\vspace{5mm}
+
+% ==========================================
+% multicols* でページ下端（bottom=30mmのライン）まで伸ばす
+% ==========================================
+\begin{multicols*}{2}
+\begin{enumerate}[label=(\arabic*)]
+    % --- 左列（1〜5問目） ---
+    \item $y = x^2 - 4x + 3$
+    
+    {\color{red}
+    $x^2 - 4x + 3 = 0$ とおくと
+    
+    $(x - 1)(x - 3) = 0$
+    
+    $x = 1, 3$
+    
+    \textbf{答.} $\boldsymbol{(1, 0), (3, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = x^2 + 2x - 8$
+    
+    {\color{red}
+    $x^2 + 2x - 8 = 0$ とおくと
+    
+    $(x + 4)(x - 2) = 0$
+    
+    $x = -4, 2$
+    
+    \textbf{答.} $\boldsymbol{(-4, 0), (2, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = 2x^2 - 5x + 2$
+    
+    {\color{red}
+    $2x^2 - 5x + 2 = 0$ とおくと
+    
+    $(2x - 1)(x - 2) = 0$
+    
+    $x = \frac{1}{2}, 2$
+    
+    \textbf{答.} $\boldsymbol{\left(\frac{1}{2}, 0\right), (2, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = x^2 - 6x + 9$
+    
+    {\color{red}
+    $x^2 - 6x + 9 = 0$ とおくと
+    
+    $(x - 3)^2 = 0$
+    
+    $x = 3$
+    
+    \textbf{答.} $\boldsymbol{(3, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = -x^2 + 3x + 4$
+    
+    {\color{red}
+    $-x^2 + 3x + 4 = 0$ とおくと
+    
+    $x^2 - 3x - 4 = 0$
+    
+    $(x - 4)(x + 1) = 0$
+    
+    $x = -1, 4$
+    
+    \textbf{答.} $\boldsymbol{(-1, 0), (4, 0)}$
+    }
+    \vspace*{\fill}
+    
+    \columnbreak
+
+    % --- 右列（6〜10問目） ---
+    \item $y = x^2 - 2x - 3$
+    
+    {\color{red}
+    $x^2 - 2x - 3 = 0$ とおくと
+    
+    $(x - 3)(x + 1) = 0$
+    
+    $x = -1, 3$
+    
+    \textbf{答.} $\boldsymbol{(-1, 0), (3, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = x^2 - 9$
+    
+    {\color{red}
+    $x^2 - 9 = 0$ とおくと
+    
+    $(x - 3)(x + 3) = 0$
+    
+    $x = -3, 3$
+    
+    \textbf{答.} $\boldsymbol{(-3, 0), (3, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = 3x^2 + 5x - 2$
+    
+    {\color{red}
+    $3x^2 + 5x - 2 = 0$ とおくと
+    
+    $(3x - 1)(x + 2) = 0$
+    
+    $x = \frac{1}{3}, -2$
+    
+    \textbf{答.} $\boldsymbol{(-2, 0), \left(\frac{1}{3}, 0\right)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = -x^2 + 4x - 3$
+    
+    {\color{red}
+    $-x^2 + 4x - 3 = 0$ とおくと
+    
+    $x^2 - 4x + 3 = 0$
+    
+    $(x - 1)(x - 3) = 0$
+    
+    $x = 1, 3$
+    
+    \textbf{答.} $\boldsymbol{(1, 0), (3, 0)}$
+    }
+    \vspace*{\fill}
+
+    \item $y = x^2 + 4x + 4$
+    
+    {\color{red}
+    $x^2 + 4x + 4 = 0$ とおくと
+    
+    $(x + 2)^2 = 0$
+    
+    $x = -2$
+    
+    \textbf{答.} $\boldsymbol{(-2, 0)}$
+    }
+    \vspace*{\fill}
+
+\end{enumerate}
+\end{multicols*}
+% ==========================================
+
+\end{document}
