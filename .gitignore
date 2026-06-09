@@ -20,3 +20,7 @@ Thumbs.db
 
 # 後でプログラミング言語（Python等）を追加した時用の環境変数ファイル
 *.env
+
+# LaTeXの出力ファイル
+*.pdf
+*.dvi
