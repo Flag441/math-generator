@@ -24,3 +24,7 @@ Thumbs.db
 # LaTeXの出力ファイル
 *.pdf
 *.dvi
+
+# Python関連の除外ファイル
+.venv/
+__pycache__/
