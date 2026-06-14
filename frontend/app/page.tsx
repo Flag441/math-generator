@@ -1,64 +1,239 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import "katex/dist/katex.min.css";
+import { InlineMath } from "react-katex";
+
+const SUBJECTS = [
+  { name: "数学I", implemented: true },
+  { name: "数学A", implemented: false },
+  { name: "数学II", implemented: false },
+  { name: "数学B", implemented: false },
+  { name: "数学III", implemented: false },
+  { name: "数学C", implemented: false },
+];
+
+const UNITS = [
+  { name: "数と式", implemented: false },
+  { name: "集合と論理", implemented: false },
+  { name: "二次関数", implemented: true },
+  { name: "図形と計量", implemented: false },
+  { name: "データの分析", implemented: false },
+];
+
+const SUB_UNITS = [
+  { name: "二次関数のグラフ", implemented: false },
+  { name: "二次関数の最大・最小", implemented: false },
+  { name: "二次関数の決定", implemented: false },
+  { name: "二次方程式と二次関数の関係", implemented: true },
+  { name: "二次不等式", implemented: false },
+];
+
+const PROBLEM_TYPES = [
+  { name: "グラフと x軸の共有点の座標を求める問題", implemented: true },
+  { name: "グラフと x軸の共有点の個数を求める問題", implemented: false },
+  { name: "放物線と直線の共有点の問題", implemented: false },
+  { name: "解の配置問題", implemented: false },
+];
 
 export default function Home() {
+  const [step, setStep] = useState<number>(0);
+  
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedSubUnit, setSelectedSubUnit] = useState<string>("");
+  const [selectedProblem, setSelectedProblem] = useState<string>("");
+
+  const [numQuestions, setNumQuestions] = useState<number>(10);
+  const [numPrints, setNumPrints] = useState<number>(1);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  
+  // ★追加：エラーメッセージ用のステート
+  const [printError, setPrintError] = useState<string>("");
+
+  const handleGeneratePDF = async () => {
+    // ★追加：100枚を超えている場合はエラーを出してストップ
+    if (numPrints > 100) {
+      setPrintError("エラー：上限の100枚を超えています。100枚以内で指定してください。");
+      return;
+    }
+    setPrintError(""); // エラーを解除
+
+    setIsGenerating(true);
+    
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}`);
+      
+      if (!response.ok) {
+        throw new Error("ネットワークエラーが発生しました");
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+
+    } catch (error) {
+      console.error(error);
+      alert("通信エラー：Pythonサーバーが起動しているか確認してください。");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!pdfUrl) return;
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.download = `数学プリント_${numQuestions}問_${numPrints}枚.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const handleBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+      if (step === 4) {
+        setPdfUrl(null);
+        setPrintError("");
+      }
+    }
+  };
+
+  const renderOptions = (options: { name: string; implemented: boolean }[], onSelect: (name: string) => void) => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mt-6">
+        {options.map((option) => (
+          <button
+            key={option.name}
+            disabled={!option.implemented}
+            onClick={() => onSelect(option.name)}
+            className={`relative p-6 rounded-xl border-2 text-xl font-bold transition-all duration-200 ${
+              option.implemented ? "bg-white border-slate-700 text-slate-800 hover:bg-slate-100 hover:shadow-md" : "bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            {option.name}
+            {!option.implemented && (
+              <span className="absolute top-2 right-2 bg-gray-600 text-white text-xs px-2 py-1 rounded">Coming Soon</span>
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-200 text-gray-800 font-sans pb-10">
+      <header className="bg-slate-700 text-white p-6 shadow-md">
+        <h1 className="text-2xl font-bold text-center tracking-wider">高校数学演習問題自動生成アプリケーション</h1>
+      </header>
+
+      <main className="max-w-6xl mx-auto p-8 mt-6 relative">
+        {step > 0 && (
+          <button onClick={handleBack} className="mb-4 flex items-center text-slate-600 hover:text-slate-900 font-bold transition-colors">
+            <span className="mr-2 text-xl">◀</span> 戻る
+          </button>
+        )}
+
+        <div className="text-center mb-8 space-y-2">
+          {step > 0 && <h2 className="text-4xl font-bold">{selectedSubject}</h2>}
+          {step > 1 && <h3 className="text-2xl text-gray-700">{selectedUnit}</h3>}
+          {step > 2 && <h4 className="text-xl text-gray-600">{selectedSubUnit}</h4>}
+          {step > 3 && <p className="text-lg text-gray-500 font-medium">{selectedProblem}</p>}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {step === 0 && renderOptions(SUBJECTS, (name) => { setSelectedSubject(name); setStep(1); })}
+        {step === 1 && renderOptions(UNITS, (name) => { setSelectedUnit(name); setStep(2); })}
+        {step === 2 && renderOptions(SUB_UNITS, (name) => { setSelectedSubUnit(name); setStep(3); })}
+        {step === 3 && renderOptions(PROBLEM_TYPES, (name) => { setSelectedProblem(name); setStep(4); })}
+
+        {step === 4 && (
+          <div className="bg-white shadow-lg rounded-xl p-8">
+            <div className="flex flex-col md:flex-row gap-10">
+              <div className="flex-1 space-y-8">
+                {/* ★変更：問題数の入力をdisabled（操作不可）にし、グレーアウト設定を追加 */}
+                <div>
+                  <label className="block font-bold text-lg mb-2 text-gray-500">
+                    1枚のプリントに何問生成しますか？ <span className="text-sm font-normal">※現在10問固定です</span>
+                  </label>
+                  <input
+                    type="number" 
+                    value={numQuestions} 
+                    disabled
+                    className="border-2 border-gray-300 rounded-lg p-3 w-full text-lg bg-gray-200 text-gray-500 cursor-not-allowed" 
+                  />
+                </div>
+                {/* ★変更：枚数指定に上限とエラー表示を追加 */}
+                <div>
+                  <label className="block font-bold text-lg mb-2">何枚のプリントを生成しますか？</label>
+                  <input
+                    type="number" 
+                    value={numPrints} 
+                    onChange={(e) => {
+                      setNumPrints(Number(e.target.value));
+                      if (Number(e.target.value) <= 100) setPrintError(""); // 100以下ならエラー文を消す
+                    }}
+                    className={`border-2 rounded-lg p-3 w-full text-lg focus:outline-none focus:border-slate-500 ${
+                      printError ? "border-red-500 bg-red-50" : "border-gray-300"
+                    }`} 
+                    min="1" max="100"
+                  />
+                  <p className="text-sm text-gray-500 mt-2">※上限は100枚です</p>
+                  {printError && (
+                    <p className="text-red-500 font-bold mt-2">{printError}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 border-2 border-slate-700 p-2 rounded-xl bg-gray-50 flex flex-col shadow-inner h-[600px] overflow-hidden">
+                {pdfUrl ? (
+                  <iframe 
+                    src={`${pdfUrl}#toolbar=0&view=FitH`} 
+                    className="w-full h-full rounded" 
+                    title="PDF Preview"
+                  />
+                ) : (
+                  <div className="flex flex-col justify-center items-center h-full text-center p-6">
+                    <div className="text-lg mb-6 font-medium leading-relaxed px-4">
+                      <InlineMath math="y = ax^2 + bx + c" /> と <InlineMath math="x" /> 軸との共有点の座標を求めよ。
+                    </div>
+                    <div className="border border-gray-400 p-4 rounded bg-white shadow-sm">
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        左のボタンから「PDFを生成」をクリックすると、<br />
+                        ここに完成したプリントのプレビューが表示されます。
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-12 flex flex-col items-center gap-4">
+              <button
+                onClick={handleGeneratePDF}
+                disabled={isGenerating || numPrints > 100} // エラー時もボタンを無効化
+                className="bg-slate-700 hover:bg-slate-800 text-white font-bold py-4 px-20 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:bg-gray-400 text-xl"
+              >
+                {isGenerating ? "PDF生成中..." : "PDFを生成"}
+              </button>
+              
+              {pdfUrl && (
+                <button
+                  onClick={handleDownload}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-20 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 text-xl mt-4"
+                >
+                  📥 プレビューのPDFをダウンロード
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
