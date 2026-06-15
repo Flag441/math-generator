@@ -48,17 +48,14 @@ export default function Home() {
   const [numPrints, setNumPrints] = useState<number>(1);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  
-  // ★追加：エラーメッセージ用のステート
   const [printError, setPrintError] = useState<string>("");
 
   const handleGeneratePDF = async () => {
-    // ★追加：100枚を超えている場合はエラーを出してストップ
     if (numPrints > 100) {
       setPrintError("エラー：上限の100枚を超えています。100枚以内で指定してください。");
       return;
     }
-    setPrintError(""); // エラーを解除
+    setPrintError("");
 
     setIsGenerating(true);
     
@@ -68,7 +65,8 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}`);
+      // 変更済み：Renderの公開URL（本番環境）
+      const response = await fetch(`https://math-generator-backend.onrender.com/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}`);
       
       if (!response.ok) {
         throw new Error("ネットワークエラーが発生しました");
@@ -157,7 +155,6 @@ export default function Home() {
           <div className="bg-white shadow-lg rounded-xl p-8">
             <div className="flex flex-col md:flex-row gap-10">
               <div className="flex-1 space-y-8">
-                {/* ★変更：問題数の入力をdisabled（操作不可）にし、グレーアウト設定を追加 */}
                 <div>
                   <label className="block font-bold text-lg mb-2 text-gray-500">
                     1枚のプリントに何問生成しますか？ <span className="text-sm font-normal">※現在10問固定です</span>
@@ -169,7 +166,6 @@ export default function Home() {
                     className="border-2 border-gray-300 rounded-lg p-3 w-full text-lg bg-gray-200 text-gray-500 cursor-not-allowed" 
                   />
                 </div>
-                {/* ★変更：枚数指定に上限とエラー表示を追加 */}
                 <div>
                   <label className="block font-bold text-lg mb-2">何枚のプリントを生成しますか？</label>
                   <input
@@ -177,7 +173,7 @@ export default function Home() {
                     value={numPrints} 
                     onChange={(e) => {
                       setNumPrints(Number(e.target.value));
-                      if (Number(e.target.value) <= 100) setPrintError(""); // 100以下ならエラー文を消す
+                      if (Number(e.target.value) <= 100) setPrintError("");
                     }}
                     className={`border-2 rounded-lg p-3 w-full text-lg focus:outline-none focus:border-slate-500 ${
                       printError ? "border-red-500 bg-red-50" : "border-gray-300"
@@ -192,7 +188,19 @@ export default function Home() {
               </div>
 
               <div className="flex-1 border-2 border-slate-700 p-2 rounded-xl bg-gray-50 flex flex-col shadow-inner h-[600px] overflow-hidden">
-                {pdfUrl ? (
+                {/* ★変更：生成中（isGenerating）の時はローディング画面を表示する */}
+                {isGenerating ? (
+                  <div className="flex flex-col justify-center items-center h-full text-center p-6">
+                    <div className="animate-pulse flex flex-col items-center">
+                      <span className="text-6xl mb-6">⏳</span>
+                      <span className="text-2xl font-bold text-slate-700">PDFを生成中...</span>
+                    </div>
+                    <div className="mt-8 border border-amber-300 bg-amber-50 p-4 rounded text-amber-800 text-sm">
+                      <p className="font-bold mb-1">※サーバー起動中のため時間がかかる場合があります</p>
+                      <p>そのまま最大1〜2分ほどお待ちください。</p>
+                    </div>
+                  </div>
+                ) : pdfUrl ? (
                   <iframe 
                     src={`${pdfUrl}#toolbar=0&view=FitH`} 
                     className="w-full h-full rounded" 
@@ -217,7 +225,7 @@ export default function Home() {
             <div className="mt-12 flex flex-col items-center gap-4">
               <button
                 onClick={handleGeneratePDF}
-                disabled={isGenerating || numPrints > 100} // エラー時もボタンを無効化
+                disabled={isGenerating || numPrints > 100}
                 className="bg-slate-700 hover:bg-slate-800 text-white font-bold py-4 px-20 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:bg-gray-400 text-xl"
               >
                 {isGenerating ? "PDF生成中..." : "PDFを生成"}
