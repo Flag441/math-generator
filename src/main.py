@@ -45,8 +45,8 @@ def generate_quadratic_problem():
         factor = f"{fmt(ans_list[0])}{fmt(ans_list[1])}"
         
     step3 = f"${factor}=0$"
-    step4 = f"$x={latex(ans_list[0])}, {latex(ans_list[1])}$" if ans1 != ans2 else f"$x={latex(ans_list[0])}$"
-    ans_val = f"({latex(ans_list[0])}, 0), ({latex(ans_list[1])}, 0)" if ans1 != ans2 else f"({latex(ans_list[0])}, 0)"
+    step4 = f"$x={ans_list[0]}, {ans_list[1]}$" if ans1 != ans2 else f"$x={ans_list[0]}$"
+    ans_val = f"$({ans_list[0]}, 0), ({ans_list[1]}, 0)$" if ans1 != ans2 else f"$({ans_list[0]}, 0)$"
     
     #C++でいうところの map<string,string> というデータ型を返している
     return {
