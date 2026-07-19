@@ -137,6 +137,8 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
 
         for i, p in enumerate(quiz):
             step2_str = f"  {p['step2']}" if p['step2'] else ""
+            
+            # 🌟 修正ポイント：「答.\」の不要なバックスラッシュを削除して「答.」にしました
             ans_block = (
                 f"  \\item $y = {p['eq']}$ \\\\\n"
                 f"  {{\\color{{red}}\n"
@@ -144,7 +146,7 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
                 f"{step2_str}"
                 f"  {p['step3']} \\\\\n"
                 f"  {p['step4']} \\\\\n"
-                f"  答.\ {p['ans']}\n"
+                f"  答. {p['ans']}\n"
                 f"  }}\n"
             )
             tex_content += ans_block
@@ -166,9 +168,9 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
     # LaTeXの終了タグ
     tex_content += "\n\\end{document}\n"
 
-    # 3. .tex ファイルとして一時保存
-    tex_filename = "temp_output.tex"
-    pdf_filename = "temp_output.pdf"
+    # 🌟 修正ポイント：ファイル名を「output」に変更してロックエラーを回避
+    tex_filename = "output.tex"
+    pdf_filename = "output.pdf"
     
     with open(tex_filename, "w", encoding="utf-8") as f:
         f.write(tex_content)
@@ -177,7 +179,8 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
     import subprocess
     try:
         subprocess.run(["platex", "-interaction=nonstopmode", tex_filename], check=True)
-        subprocess.run(["dvipdfmx", "temp_output.dvi"], check=True)
+        # 🌟 ここも「output.dvi」に変更
+        subprocess.run(["dvipdfmx", "output.dvi"], check=True)
     except Exception as e:
         return {"error": f"PDFの作成に失敗しました: {str(e)}"}
 

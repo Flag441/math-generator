@@ -56,7 +56,6 @@ export default function Home() {
       return;
     }
     setPrintError("");
-
     setIsGenerating(true);
     
     if (pdfUrl) {
@@ -65,8 +64,13 @@ export default function Home() {
     }
 
     try {
-      // 変更済み：Renderの公開URL（本番環境）
-      const response = await fetch(`https://math-generator-backend.onrender.com/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}`);
+      // 🌟 ここを追加！環境によってアクセス先を自動で切り替える
+      const API_BASE_URL = process.env.NODE_ENV === "production"
+        ? "https://math-generator-backend.onrender.com" // 本番環境（Render）
+        : "http://localhost:8000";                      // 開発環境（自分のパソコン）
+
+      // 🌟 先ほど作った API_BASE_URL を使うように変更
+      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&t=${Date.now()}`);
       
       if (!response.ok) {
         throw new Error("ネットワークエラーが発生しました");
@@ -78,7 +82,7 @@ export default function Home() {
 
     } catch (error) {
       console.error(error);
-      alert("通信エラー：Pythonサーバーが起動しているか確認してください。");
+      alert("通信エラー：サーバーが起動しているか確認してください。");
     } finally {
       setIsGenerating(false);
     }
