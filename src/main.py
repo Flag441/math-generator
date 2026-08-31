@@ -27,11 +27,11 @@ def generate_quadratic_problem():
     x = Symbol('x') #xは変数であることを伝える
     ans1, ans2 = random.randint(-5, 5), random.randint(-5, 5) #x軸との共有点
     a = random.choice([1, -1]) #グラフが上に凸か下に凸か
-    expr = expand(a * (x - ans1) * (x - ans2)) #自動で展開してくれる
+    expr = expand(a * (x - ans1) * (x - ans2)) # type: ignore 自動で展開してくれる
     
     eq_str = latex(expr) 
     step1 = f"${latex(expr)}=0$ とおくと"
-    step2 = f"${latex(expand((x - ans1) * (x - ans2)))}=0$ \\\\\n        " if a == -1 else "" #上に凸ならstep2にはマイナス倍したものを入れる
+    step2 = f"${latex(expand((x - ans1) * (x - ans2)))}=0$ \\\\\n        " if a == -1 else "" # type: ignore 上に凸ならstep2にはマイナス倍したものを入れる
         
     ans_list = sorted([ans1, ans2]) #答えを入れたもの
     
