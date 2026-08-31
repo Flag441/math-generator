@@ -1,10 +1,14 @@
 import os
 import subprocess
 import random #乱数生成に必要
+import tempfile # 並列処理時に一時的にファイルを生成するために必要
 from fastapi import FastAPI #フレームワーク
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sympy import Symbol, expand, latex #数学計算用
+from pathlib import Path
+from fastapi import HTTPException
+from fastapi.responses import Response
 
 # FastAPIアプリケーションの立ち上げ
 app = FastAPI(title="数学プリント自動生成API")
@@ -168,26 +172,40 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
     # LaTeXの終了タグ
     tex_content += "\n\\end{document}\n"
 
-    # 🌟 修正ポイント：ファイル名を「output」に変更してロックエラーを回避
-    tex_filename = "output.tex"
-    pdf_filename = "output.pdf"
-    
-    with open(tex_filename, "w", encoding="utf-8") as f:
-        f.write(tex_content)
+    # リソースを奪い合わないように使い捨てファイルを作成
+    with tempfile.TemporaryDirectory() as tempdir:
+        tmp = Path(tempdir) 
+        tex_path= tmp / "output.tex"
+        tex_path.write_text(tex_content, encoding="utf-8")
 
-    # 4. LaTeXコマンドを実行してPDF化する
-    import subprocess
-    try:
-        subprocess.run(["platex", "-interaction=nonstopmode", tex_filename], check=True)
-        # 🌟 ここも「output.dvi」に変更
-        subprocess.run(["dvipdfmx", "output.dvi"], check=True)
-    except Exception as e:
-        return {"error": f"PDFの作成に失敗しました: {str(e)}"}
+        # どこで失敗したのかをテストでわかるように修正
+        # capture_output=Trueを入れることでエラーが出たときにログが出る
+        result = subprocess.run(
+            ["platex","-interaction=nonstopmode","output.tex"],
+            cwd=tmp,capture_output=True,text=True,errors="replace",
+        )
 
-    # 5. 完成したPDFファイルをフロントエンドに返却
-    from fastapi.responses import FileResponse
-    return FileResponse(
-        pdf_filename, 
-        media_type="application/pdf", 
-        filename=f"math_print_{num_problems}problems_{num_prints}prints.pdf"
+        # return: HTTP 200が返る. raise : HTTP 500が返る.
+
+        if result.returncode != 0:
+            raise HTTPException(status_code=500,detail=f"platexに失敗しました:\n{result.stdout[-2000:]}")
+
+        result = subprocess.run(
+            ["dvipdfmx","output.dvi"],
+            cwd=tmp,capture_output=True,text=True,errors="replace",
+        )
+
+        if result.returncode != 0:
+            raise HTTPException(status_code=500,detail = f"dvipdfmxに失敗しました:\n{result.stdout[-2000:]}")
+
+        # 生成したファイルをメモリへ読み込む
+        pdf_bytes = (tmp / "output.pdf").read_bytes()
+
+    # 読み込んだデータを返す
+    return Response(
+        content = pdf_bytes,
+        media_type = "application/pdf",
+        headers = {
+            "Content-Disposition": f'attachment; filename="math_print_{num_problems}problems_{num_prints}prints.pdf"'
+        },
     )
