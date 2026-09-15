@@ -1,13 +1,11 @@
-import os
 import subprocess
 import random #乱数生成に必要
 import tempfile # 並列処理時に一時的にファイルを生成するために必要
 from fastapi import FastAPI #フレームワーク
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from sympy import Symbol, expand, latex #数学計算用
 from pathlib import Path
-from fastapi import HTTPException
 from fastapi.responses import Response
 
 # FastAPIアプリケーションの立ち上げ
@@ -16,8 +14,10 @@ app = FastAPI(title="数学プリント自動生成API")
 # フロントエンド(Next.js)と通信するための設定（CORS）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # 開発中はどこからでもアクセス可能にする
-    allow_credentials=True,
+    allow_origins=[
+        "https://math-generator-puce.vercel.app", #本番のフロントエンド
+        "http://localhost:3000", #開発中
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -25,12 +25,12 @@ app.add_middleware(
 def generate_quadratic_problem():
     """1問分のデータを生成する関数"""
     x = Symbol('x') #xは変数であることを伝える
-    ans1, ans2 = random.randint(-5, 5), random.randint(-5, 5) #x軸との共有点
+    ans1, ans2 = random.randint(-5, 5), random.randint(-5, 5) #x軸との共有点. random.radintは両端を含む関数.
     a = random.choice([1, -1]) #グラフが上に凸か下に凸か
     expr = expand(a * (x - ans1) * (x - ans2)) # type: ignore 自動で展開してくれる
     
     eq_str = latex(expr) 
-    step1 = f"${latex(expr)}=0$ とおくと"
+    step1 = f"${eq_str}=0$ とおくと"
     step2 = f"${latex(expand((x - ans1) * (x - ans2)))}=0$ \\\\\n        " if a == -1 else "" # type: ignore 上に凸ならstep2にはマイナス倍したものを入れる
         
     ans_list = sorted([ans1, ans2]) #答えを入れたもの
@@ -142,7 +142,6 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
         for i, p in enumerate(quiz):
             step2_str = f"  {p['step2']}" if p['step2'] else ""
             
-            # 🌟 修正ポイント：「答.\」の不要なバックスラッシュを削除して「答.」にしました
             ans_block = (
                 f"  \\item $y = {p['eq']}$ \\\\\n"
                 f"  {{\\color{{red}}\n"
@@ -162,9 +161,9 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
                 tex_content += "  \\vspace{12mm}\n"
 
         tex_content += r"""
-        \end{enumerate}
-        \end{multicols*}
-        """
+\end{enumerate}
+\end{multicols*}
+"""
         # 最後のプリント以外は、次のプリントのために改ページを入れる
         if print_idx < num_prints - 1:
             tex_content += "\n\\newpage\n"

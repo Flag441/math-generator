@@ -4,6 +4,7 @@ import { useState } from "react";
 import "katex/dist/katex.min.css";
 import { InlineMath } from "react-katex";
 
+// 本来は入れ子構造にすべきであるが, なっていない. 数学Iを選択しても, 数学IIを選択しても数学Iの内容が次に出てきてしまう.
 const SUBJECTS = [
   { name: "数学I", implemented: true },
   { name: "数学A", implemented: false },
@@ -37,48 +38,58 @@ const PROBLEM_TYPES = [
 ];
 
 export default function Home() {
-  const [step, setStep] = useState<number>(0);
+  //画面の全状態を管理している.
+  const [step, setStep] = useState<number>(0); //今どの画面にいるか
   
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  //選択した内容
+  const [selectedSubject, setSelectedSubject] = useState<string>(""); 
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [selectedSubUnit, setSelectedSubUnit] = useState<string>("");
   const [selectedProblem, setSelectedProblem] = useState<string>("");
 
+  // 問題数と枚数
   const [numQuestions, setNumQuestions] = useState<number>(10);
   const [numPrints, setNumPrints] = useState<number>(1);
+
+  //生成中か、結果があるか、エラーがあるか
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [printError, setPrintError] = useState<string>("");
 
+  // アロー関数で書いている. asyncはこの関数内でawaitを使うため必要.
   const handleGeneratePDF = async () => {
     if (numPrints > 100) {
       setPrintError("エラー：上限の100枚を超えています。100枚以内で指定してください。");
       return;
     }
+
+    // エラー表示を消して, 生成中に切り替える. Reactはこの2つをまとめて1回の再描画にする.
     setPrintError("");
     setIsGenerating(true);
     
+    // 前回生成したデータを消す処理
     if (pdfUrl) {
       window.URL.revokeObjectURL(pdfUrl);
       setPdfUrl(null);
     }
 
     try {
-      // 🌟 ここを追加！環境によってアクセス先を自動で切り替える
+      // 3項間演算子
       const API_BASE_URL = process.env.NODE_ENV === "production"
         ? "https://math-generator-backend.onrender.com" // 本番環境（Render）
-        : "http://localhost:8000";                      // 開発環境（自分のパソコン）
+        : "http://localhost:8000"; // 開発環境（自分のパソコン）
 
-      // 🌟 先ほど作った API_BASE_URL を使うように変更
+      // Date.now()を組み込むことでURLが常に異なるため, ボタンを押すたびに異なる問題が出てくる.
       const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&t=${Date.now()}`);
       
+      // fetchは404や500ときも例外を投げないので自分で確認する必要がある.
       if (!response.ok) {
         throw new Error("ネットワークエラーが発生しました");
       }
       
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      setPdfUrl(url);
+      const blob = await response.blob(); // 受信したデータをバイナリの形として取り出す
+      const url = window.URL.createObjectURL(blob); // 取り出したものをブラウザ内だけで有効な仮URLを発行
+      setPdfUrl(url); // 状態に保存
 
     } catch (error) {
       console.error(error);
@@ -89,7 +100,9 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    if (!pdfUrl) return;
+    if (!pdfUrl) return; //これがあることで以下pdfUrlがnullであることがない
+
+    // ダウンロードリンクを作成して,それをクリックしたことにする.
     const a = document.createElement("a");
     a.href = pdfUrl;
     a.download = `数学プリント_${numQuestions}問_${numPrints}枚.pdf`;
@@ -101,7 +114,7 @@ export default function Home() {
   const handleBack = () => {
     if (step > 0) {
       setStep(step - 1);
-      if (step === 4) {
+      if (step === 4) { //setStepはReactに新しい値を伝えるだけだから実行中の関数は変わらない.次に呼ばれたときに変わる.
         setPdfUrl(null);
         setPrintError("");
       }
@@ -191,7 +204,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="flex-1 border-2 border-slate-700 p-2 rounded-xl bg-gray-50 flex flex-col shadow-inner h-[600px] overflow-hidden">
+              <div className="flex-1 border-2 border-slate-700 p-2 rounded-xl bg-gray-50 flex flex-col shadow-inner h-150 overflow-hidden">
                 {/* ★変更：生成中（isGenerating）の時はローディング画面を表示する */}
                 {isGenerating ? (
                   <div className="flex flex-col justify-center items-center h-full text-center p-6">
