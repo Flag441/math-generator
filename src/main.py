@@ -54,7 +54,7 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1):
         quiz = []
         seen = set() # 過去に出現した問題
         while len(quiz) < num_problems:
-            p = quadoratic_function.generate_quadratic_problem()
+            p = quadoratic_function.quadoratic_axis()
             if p['eq'] not in seen: # まだ出現していない問題なら追加をする
                 seen.add(p['eq'])
                 quiz.append(p)

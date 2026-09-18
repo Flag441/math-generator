@@ -2,8 +2,8 @@ import random #乱数生成に必要
 from sympy import Symbol, expand, latex #数学計算用
 
 
-def generate_quadratic_problem():
-    """1問分のデータを生成する関数"""
+def quadoratic_axis():
+    """二次関数とx軸の共有点を求める問題"""
     x = Symbol('x') #xは変数であることを伝える
     ans1, ans2 = random.randint(-5, 5), random.randint(-5, 5) #x軸との共有点. random.radintは両端を含む関数.
     a = random.choice([1, -1]) #グラフが上に凸か下に凸か
