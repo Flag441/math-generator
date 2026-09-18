@@ -79,8 +79,8 @@ export default function Home() {
         ? "https://math-generator-backend.onrender.com" // 本番環境（Render）
         : "http://localhost:8000"; // 開発環境（自分のパソコン）
 
-      // Date.now()を組み込むことでURLが常に異なるため, ボタンを押すたびに異なる問題が出てくる.
-      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&t=${Date.now()}`);
+      const seed = Math.floor(Math.random()*1000000000)
+      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&seed=${seed}`);
       
       // fetchは404や500ときも例外を投げないので自分で確認する必要がある.
       if (!response.ok) {
