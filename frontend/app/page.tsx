@@ -84,7 +84,16 @@ export default function Home() {
       
       // fetchは404や500ときも例外を投げないので自分で確認する必要がある.
       if (!response.ok) {
-        throw new Error("ネットワークエラーが発生しました");
+        let message = 'サーバーがエラーを返しました (HTTP ${responce.status})';
+        try
+        {
+          const data = await response.json();
+          if(data.detail) message = data.detail;
+        }catch
+        {
+
+        }
+        throw new Error(message);
       }
       
       const blob = await response.blob(); // 受信したデータをバイナリの形として取り出す
@@ -93,7 +102,7 @@ export default function Home() {
 
     } catch (error) {
       console.error(error);
-      alert("通信エラー：サーバーが起動しているか確認してください。");
+      setPrintError(error instanceof Error ? error.message : "予期しないエラーが発生しました");
     } finally {
       setIsGenerating(false);
     }

@@ -150,22 +150,32 @@ def generate_pdf(num_problems: int = 10, num_prints: int = 1,seed: int = 0):
         tex_path= tmp / "output.tex"
         tex_path.write_text(tex_content, encoding="utf-8")
 
-        # どこで失敗したのかをテストでわかるように修正
-        # capture_output=Trueを入れることでエラーが出たときにログが出る
-        result = subprocess.run(
-            ["platex","-interaction=nonstopmode","output.tex"],
-            cwd=tmp,capture_output=True,text=True,errors="replace",
-        )
-
-        # return: HTTP 200が返る. raise : HTTP 500が返る.
+        try:
+            result = subprocess.run(
+                ["platex","-interaction=nonstopmode","output.tex"],
+                cwd=tmp,capture_output=True,text=True,errors="replace",
+                stdin=subprocess.DEVNULL, timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            raise HTTPException(
+                status_code = 504,
+                detail = "platexの処理が30秒を超えました。問題数を減らして再試行してください。",
+            )
 
         if result.returncode != 0:
             raise HTTPException(status_code=500,detail=f"platexに失敗しました:\n{result.stdout[-2000:]}")
 
-        result = subprocess.run(
-            ["dvipdfmx","output.dvi"],
-            cwd=tmp,capture_output=True,text=True,errors="replace",
-        )
+        try:
+            result = subprocess.run(
+                ["dvipdfmx","output.dvi"],
+                cwd=tmp,capture_output=True,text=True,errors="replace",
+                stdin=subprocess.DEVNULL, timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            raise HTTPException(
+                status_code=504,
+                detail="dvipdfmxの処理が30秒を超えました。問題数を減らして再試行してください。"
+            )
 
         if result.returncode != 0:
             raise HTTPException(status_code=500,detail = f"dvipdfmxに失敗しました:\n{result.stdout[-2000:]}")
