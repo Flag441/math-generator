@@ -4,6 +4,7 @@ import tempfile # 並列処理時に一時的にファイルを生成するた�
 from fastapi import FastAPI #フレームワーク
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Query
 from pathlib import Path
 from fastapi.responses import Response
 from .Problems import quadratic_function
@@ -25,7 +26,8 @@ app.add_middleware(
 # --- ここからがAPIの窓口（エンドポイント） ---
 
 @app.get("/api/generate")
-def generate_pdf(num_problems: int = 10, num_prints: int = 1,seed: int = 0):
+# 一旦,問題生成パターンが132通りしかないのでプリント1枚に132問を上限に設定 今後は問題によってここは変える
+def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Query(1,ge=1,le=100),seed: int = 0):
     """
     指定された問題数と枚数でLaTeXファイルを作成し、
     PDFに変換してフロントエンドに返すAPI
