@@ -9,6 +9,7 @@ def quadratic_value(rng: random.Random):
     ret = [a,ans1,ans2]
     return ret
 
+# registerの真下にあるdefが,fnとして登録される.
 @register(
         key="quadratic_axis",
         subject="数学I",
