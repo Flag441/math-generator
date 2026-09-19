@@ -2,7 +2,7 @@ import random #乱数生成に必要
 from .problem import Problem,register
 from sympy import Symbol, expand, latex #数学計算用
 
-def quadratic_axis_value(rng: random.Random):
+def quadratic_value(rng: random.Random):
     """二次関数とx軸の共有点を求める問題. y=a(x-ans1)(x-ans2)の a,ans1,ans2のリストを返す."""
     ans1, ans2 = rng.randint(-5, 5), rng.randint(-5, 5) #x軸との共有点. random.radintは両端を含む関数.
     a = rng.choice([1, -1]) #グラフが上に凸か下に凸か
@@ -21,7 +21,7 @@ def quadratic_axis_value(rng: random.Random):
 def quadratic_axis_problem(rng: random.Random):
     """二次関数とx軸の共有点を求める問題"""
     x = Symbol('x') #xは変数であることを伝える
-    problem_list = quadratic_axis_value(rng)
+    problem_list = quadratic_value(rng)
     a = problem_list[0]
     ans1 = problem_list[1]
     ans2 = problem_list[2]

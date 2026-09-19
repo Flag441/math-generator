@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Query
 from pathlib import Path
 from fastapi.responses import Response
-from .Problems import quadratic_function
+from .Problems import problem
 
 # FastAPIアプリケーションの立ち上げ
 app = FastAPI(title="数学プリント自動生成API")
@@ -34,11 +34,18 @@ app.add_middleware(
 
 @app.get("/api/generate")
 # 一旦,問題生成パターンが132通りしかないのでプリント1枚に132問を上限に設定 今後は問題によってここは変える
-def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Query(1,ge=1,le=100),seed: int = 0):
+def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Query(1,ge=1,le=100),seed: int = 0,problem_type: str="quadratic_axis"):
     """
     指定された問題数と枚数でLaTeXファイルを作成し、
     PDFに変換してフロントエンドに返すAPI
     """
+
+    spec = problem.REGISTRY.get(problem_type)
+    if spec is None:
+        raise HTTPException(
+            status_code=404,
+            detail = f"未知の問題種別です: {problem_type}"
+        )
 
     # 2段組みにしたいため問題数を2分割
     midpoint = (num_problems + 1) // 2 - 1
@@ -60,7 +67,7 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
                     status_code = 500,
                     detail = f"問題の生成に失敗しました ({attempts}回試行)",
                 )
-            p = quadratic_function.quadratic_axis_problem(rng)
+            p = spec["generate"](rng)
             if p.question not in seen: # まだ出現していない問題なら追加をする
                 seen.add(p.question)
                 quiz.append(p)
