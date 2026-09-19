@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 自分のパソコンの src フォルダ（Pythonのコード）をサーバーにコピー
 COPY src/ ./src/
+COPY latex_templates/ ./latex_templates/
 
 # クラウドサービス（Render）が使うポート番号を許可
 EXPOSE 8000

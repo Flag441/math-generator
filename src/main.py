@@ -12,6 +12,13 @@ from .Problems import quadratic_function
 # FastAPIアプリケーションの立ち上げ
 app = FastAPI(title="数学プリント自動生成API")
 
+TEMPLATE_DIR = Path(__file__).parent.parent/"latex_templates"
+DOCUMENT = (TEMPLATE_DIR / "document.tex").read_text(encoding="utf-8")
+PAGE = (TEMPLATE_DIR / "page.tex").read_text(encoding="utf-8")
+
+TITLE = "二次関数 グラフと$x$軸の共有点を求める問題"
+INSTRUCTION = "次の二次関数のグラフと$x$軸の共有点の座標を求めよ。"
+
 # フロントエンド(Next.js)と通信するための設定（CORS）
 app.add_middleware(
     CORSMiddleware,
@@ -32,24 +39,11 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
     指定された問題数と枚数でLaTeXファイルを作成し、
     PDFに変換してフロントエンドに返すAPI
     """
-    # """を付けると \ を普通の文字列として処理できるようになる
-    tex_content = r"""
-\documentclass[a4paper,11pt]{jsarticle}
-\usepackage{amsmath,amssymb}
-\usepackage{multicol}
-\usepackage{xcolor}
-% 下の余白をピッタリ30mm（3cm）に指定
-\usepackage[top=20mm, left=20mm, right=20mm, bottom=30mm]{geometry} 
-
-\pagestyle{empty}
-\renewcommand{\labelenumi}{(\arabic{enumi})}
-\setlength{\columnseprule}{0.4pt}
-
-\begin{document}
-"""
 
     # 2段組みにしたいため問題数を2分割
     midpoint = (num_problems + 1) // 2 - 1
+
+    pages = []
 
     # 指定されたプリント枚数（num_prints）分だけループ処理
     for print_idx in range(num_prints):
@@ -71,49 +65,17 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
                 seen.add(p.question)
                 quiz.append(p)
 
-        # 2. 問題ページを追記
-        tex_content += r"""
-% ------ 問題ページ ------
-\noindent
-{\large \textbf{二次関数 グラフと$x$軸の共有点を求める問題}} \hfill 年\hspace{5mm}組\hspace{5mm}番\hspace{2mm}氏名\rule{40mm}{0.4pt}
-\vspace{3mm}
-
-\noindent
-問題: 次の二次関数のグラフと$x$軸の共有点の座標を求めよ。
-\vspace{3mm}
-
-\begin{multicols*}{2}
-\begin{enumerate}
-"""
-
+        items = ""
         for i, p in enumerate(quiz):
-            tex_content += f"  \\item $y = {p.question}$\n"
+            items += f"  \\item $y = {p.question}$\n"
             if i == midpoint:
-                tex_content += "  \\vspace*{\\fill}\n  \\columnbreak\n"
+                items += "  \\vspace*{\\fill}\n  \\columnbreak\n"
             elif i == num_problems - 1:
-                tex_content += "  \\vspace*{\\fill}\n"
+                items += "  \\vspace*{\\fill}\n"
             else:
-                tex_content += "  \\vspace{35mm}\n"
+                items += "  \\vspace{35mm}\n"
 
-        tex_content += r"""
-\end{enumerate}
-\end{multicols*}
-
-\newpage
-
-% ------ 解答ページ ------
-\noindent
-{\large \textbf{二次関数 グラフと$x$軸の共有点を求める問題 【解答】}} \hfill 年\hspace{5mm}組\hspace{5mm}番\hspace{2mm}氏名\rule{40mm}{0.4pt}
-\vspace{3mm}
-
-\noindent
-問題: 次の二次関数のグラフと$x$軸の共有点の座標を求めよ。
-\vspace{3mm}
-
-\begin{multicols*}{2}
-\begin{enumerate}
-"""
-
+        ans_items = ""
         for i, p in enumerate(quiz):
             step2_str = f"  {p.step[1]}" if p.step[1] else ""
             
@@ -127,24 +89,33 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
                 f"  答. {p.answer}\n"
                 f"  }}\n"
             )
-            tex_content += ans_block
+
+            ans_items += ans_block
             if i == midpoint:
-                tex_content += "  \\vspace*{\\fill}\n  \\columnbreak\n"
+                ans_items += "  \\vspace*{\\fill}\n  \\columnbreak\n"
             elif i == num_problems - 1:
-                tex_content += "  \\vspace*{\\fill}\n"
+                ans_items += "  \\vspace*{\\fill}\n"
             else:
-                tex_content += "  \\vspace{12mm}\n"
+                ans_items += "  \\vspace{12mm}\n"
 
-        tex_content += r"""
-\end{enumerate}
-\end{multicols*}
-"""
-        # 最後のプリント以外は、次のプリントのために改ページを入れる
-        if print_idx < num_prints - 1:
-            tex_content += "\n\\newpage\n"
+        question_page = ( PAGE
+            .replace("%%TITLE%%",TITLE)
+            .replace("%%INSTRUCTION%%",INSTRUCTION)
+            .replace("%%ITEMS%%",items)
+        )
 
-    # LaTeXの終了タグ
-    tex_content += "\n\\end{document}\n"
+        ans_page = ( PAGE
+            .replace("%%TITLE%%",TITLE+"【解答】")
+            .replace("%%INSTRUCTION%%",INSTRUCTION)
+            .replace("%%ITEMS%%",ans_items)
+        )
+
+        pages.append(question_page)
+        pages.append(ans_page)
+
+    body = "\n\\newpage\n".join(pages)
+
+    tex_content = DOCUMENT.replace("%%BODY%%",body)
 
     # リソースを奪い合わないように使い捨てファイルを作成
     with tempfile.TemporaryDirectory() as tempdir:
