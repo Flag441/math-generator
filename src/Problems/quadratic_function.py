@@ -1,5 +1,5 @@
 import random #乱数生成に必要
-from .problem import Problem
+from .problem import Problem,register
 from sympy import Symbol, expand, latex #数学計算用
 
 def quadratic_axis_value(rng: random.Random):
@@ -8,6 +8,15 @@ def quadratic_axis_value(rng: random.Random):
     a = rng.choice([1, -1]) #グラフが上に凸か下に凸か
     ret = [a,ans1,ans2]
     return ret
+
+@register(
+        key="quadratic_axis",
+        subject="数学I",
+        unit="二次関数",
+        sub_unit="グラフとx軸の共有点",
+        label="共有点の座標を求める",
+        per_page=12,
+)
 
 def quadratic_axis_problem(rng: random.Random):
     """二次関数とx軸の共有点を求める問題"""
