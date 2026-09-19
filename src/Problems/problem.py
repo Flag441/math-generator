@@ -13,8 +13,10 @@ REGISTRY = {} # APIで使用する問題名簿
 # unit : 単元名
 # sub_unit : 問題名
 # label : 人間が読む用のタグ。 例:「グラフと共有点を求める」
+# title : pdfの見出し
+# instruction : 問題文 「次の問題を解け」など
 # per_page : 1ページ当たりの問題数
-def register(key, subject, unit, sub_unit,label,per_page=12):
+def register(key, subject, unit, sub_unit,label,title,instruction,per_page=12):
     def decorator(fn):
         REGISTRY[key]={
             "generate":fn,
@@ -22,6 +24,8 @@ def register(key, subject, unit, sub_unit,label,per_page=12):
             "unit":unit,
             "sub_unit":sub_unit,
             "label":label,
+            "title":title,
+            "instruction":instruction,
             "per_page":per_page,
             }
         return fn

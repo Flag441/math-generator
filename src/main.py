@@ -16,9 +16,6 @@ TEMPLATE_DIR = Path(__file__).parent.parent/"latex_templates"
 DOCUMENT = (TEMPLATE_DIR / "document.tex").read_text(encoding="utf-8")
 PAGE = (TEMPLATE_DIR / "page.tex").read_text(encoding="utf-8")
 
-TITLE = "二次関数 グラフと$x$軸の共有点を求める問題"
-INSTRUCTION = "次の二次関数のグラフと$x$軸の共有点の座標を求めよ。"
-
 # フロントエンド(Next.js)と通信するための設定（CORS）
 app.add_middleware(
     CORSMiddleware,
@@ -106,14 +103,14 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
                 ans_items += "  \\vspace{12mm}\n"
 
         question_page = ( PAGE
-            .replace("%%TITLE%%",TITLE)
-            .replace("%%INSTRUCTION%%",INSTRUCTION)
+            .replace("%%TITLE%%",spec["title"])
+            .replace("%%INSTRUCTION%%",spec["instruction"])
             .replace("%%ITEMS%%",items)
         )
 
         ans_page = ( PAGE
-            .replace("%%TITLE%%",TITLE+"【解答】")
-            .replace("%%INSTRUCTION%%",INSTRUCTION)
+            .replace("%%TITLE%%",spec["title"]+"【解答】")
+            .replace("%%INSTRUCTION%%",spec["instruction"])
             .replace("%%ITEMS%%",ans_items)
         )
 
