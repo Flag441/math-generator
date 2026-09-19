@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y \
     texlive-lang-japanese \
     texlive-latex-extra \
     texlive-fonts-recommended \
+    fonts-ipaexfont \
+    && kanji-config-updmap-sys ipaex \
+    && kanji-config-updmap-sys status \
     && rm -rf /var/lib/apt/lists/*
 
 # サーバー内での作業場所を /app に設定
