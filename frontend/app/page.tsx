@@ -1,8 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "katex/dist/katex.min.css";
 import { InlineMath } from "react-katex";
+
+const API_BASE_URL = process.env.NODE_ENV === "production"
+        ? "https://math-generator-backend.onrender.com" // 本番環境(Render)
+        : "http://localhost:8000"; // 開発環境(自分のパソコン)
+
+type ProblemType={
+  key: string;
+  subject: string;
+  unit: string;
+  sub_unit: string;
+  label: string;
+  per_page: number;
+}
 
 // 本来は入れ子構造にすべきであるが, なっていない. 数学Iを選択しても, 数学IIを選択しても数学Iの内容が次に出てきてしまう.
 const SUBJECTS = [
@@ -56,6 +69,15 @@ export default function Home() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [printError, setPrintError] = useState<string>("");
 
+  const [types,setTypes] = useState<ProblemType[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/problem-types`) //通信して
+    .then((res) => res.json()) //本文をjsonとして解釈して
+    .then((data) => setTypes(data)) //保存する.
+    .catch(() => setPrintError("問題一覧の取得に失敗しました"));
+  },[]);
+
   // アロー関数で書いている. asyncはこの関数内でawaitを使うため必要.
   const handleGeneratePDF = async () => {
     if (numPrints > 100) {
@@ -74,10 +96,6 @@ export default function Home() {
     }
 
     try {
-      // 3項間演算子
-      const API_BASE_URL = process.env.NODE_ENV === "production"
-        ? "https://math-generator-backend.onrender.com" // 本番環境（Render）
-        : "http://localhost:8000"; // 開発環境（自分のパソコン）
 
       const seed = Math.floor(Math.random()*1000000000)
       const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&seed=${seed}`);

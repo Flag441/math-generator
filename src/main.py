@@ -164,3 +164,18 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
             "Content-Disposition": f'attachment; filename="math_print_{num_problems}problems_{num_prints}prints.pdf"'
         },
     )
+
+@app.get("/api/problem-types")
+def list_problem_types():
+    """登録されている問題種別の一覧を返す"""
+    return [
+        {
+            "key": key,
+            "subject": spec["subject"],
+            "unit": spec["unit"],
+            "sub_unit": spec["sub_unit"],
+            "label": spec["label"],
+            "per_page": spec["per_page"],
+        }
+        for key, spec in problem.REGISTRY.items()
+    ]
