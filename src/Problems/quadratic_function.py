@@ -36,8 +36,8 @@ def quadratic_axis_problem(rng: random.Random):
     step = []
     step1 = f"${eq_str}=0$ とおくと"
     step.append(step1)
-    step2 = f"${latex(expand((x - ans1) * (x - ans2)))}=0$ \\\\\n        " if a == -1 else "" # type: ignore 上に凸ならstep2にはマイナス倍したものを入れる
-    step.append(step2)
+    if a==-1:
+        step.append(f"${latex(expand((x-ans1)*(x-ans2)))}=0$") #type: ignore
         
     ans_list = sorted([ans1, ans2]) #答えを入れたもの
     

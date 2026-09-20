@@ -81,17 +81,13 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
 
         ans_items = ""
         for i, p in enumerate(quiz):
-            step2_str = f"  {p.step[1]}" if p.step[1] else ""
-            
+            steps_tex = "".join(f" {s} \\\\\n" for s in p.step)
             ans_block = (
-                f"  \\item ${p.question}$ \\\\\n"
-                f"  {{\\color{{red}}\n"
-                f"  {p.step[0]} \\\\\n"
-                f"{step2_str}"
-                f"  {p.step[2]} \\\\\n"
-                f"  {p.step[3]} \\\\\n"
-                f"  答. {p.answer}\n"
-                f"  }}\n"
+                f" \\item ${p.question}$ \\\\\n"
+                f" {{\\color{{red}}\n"
+                f"{steps_tex}"
+                f" 答. {p.answer}\n"
+                f" }}\n"
             )
 
             ans_items += ans_block
