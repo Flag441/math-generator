@@ -2,6 +2,8 @@ import random #乱数生成に必要
 from .problem import Problem,register
 from sympy import Symbol, expand, latex #数学計算用
 
+#数学I 二次関数
+
 def quadratic_value(rng: random.Random):
     """二次関数とx軸の共有点を求める問題. y=a(x-ans1)(x-ans2)の a,ans1,ans2のリストを返す."""
     ans1, ans2 = rng.randint(-5, 5), rng.randint(-5, 5) #x軸との共有点. random.radintは両端を含む関数.
@@ -57,6 +59,6 @@ def quadratic_axis_problem(rng: random.Random):
     step4 = f"$x={ans_list[0]}, {ans_list[1]}$" if ans1 != ans2 else f"$x={ans_list[0]}$"
     step.append(step4)
     ans_val = f"$({ans_list[0]}, 0), ({ans_list[1]}, 0)$" if ans1 != ans2 else f"$({ans_list[0]}, 0)$"
-    ret = Problem(eq_str,step,ans_val)
+    ret = Problem(f"y={eq_str}",step,ans_val)
     
     return ret

@@ -71,7 +71,7 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
 
         items = ""
         for i, p in enumerate(quiz):
-            items += f"  \\item $y = {p.question}$\n"
+            items += f"  \\item ${p.question}$\n"
             if i == midpoint:
                 items += "  \\vspace*{\\fill}\n  \\columnbreak\n"
             elif i == num_problems - 1:
@@ -84,7 +84,7 @@ def generate_pdf(num_problems: int = Query(10,ge=1,le=132), num_prints: int = Qu
             step2_str = f"  {p.step[1]}" if p.step[1] else ""
             
             ans_block = (
-                f"  \\item $y = {p.question}$ \\\\\n"
+                f"  \\item ${p.question}$ \\\\\n"
                 f"  {{\\color{{red}}\n"
                 f"  {p.step[0]} \\\\\n"
                 f"{step2_str}"
