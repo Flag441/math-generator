@@ -14,41 +14,10 @@ type ProblemType={
   unit: string;
   sub_unit: string;
   label: string;
+  instruction: string;
   per_page: number;
+  example: string;
 }
-
-// 本来は入れ子構造にすべきであるが, なっていない. 数学Iを選択しても, 数学IIを選択しても数学Iの内容が次に出てきてしまう.
-const SUBJECTS = [
-  { name: "数学I", implemented: true },
-  { name: "数学A", implemented: false },
-  { name: "数学II", implemented: false },
-  { name: "数学B", implemented: false },
-  { name: "数学III", implemented: false },
-  { name: "数学C", implemented: false },
-];
-
-const UNITS = [
-  { name: "数と式", implemented: false },
-  { name: "集合と論理", implemented: false },
-  { name: "二次関数", implemented: true },
-  { name: "図形と計量", implemented: false },
-  { name: "データの分析", implemented: false },
-];
-
-const SUB_UNITS = [
-  { name: "二次関数のグラフ", implemented: false },
-  { name: "二次関数の最大・最小", implemented: false },
-  { name: "二次関数の決定", implemented: false },
-  { name: "二次方程式と二次関数の関係", implemented: true },
-  { name: "二次不等式", implemented: false },
-];
-
-const PROBLEM_TYPES = [
-  { name: "グラフと x軸の共有点の座標を求める問題", implemented: true },
-  { name: "グラフと x軸の共有点の個数を求める問題", implemented: false },
-  { name: "放物線と直線の共有点の問題", implemented: false },
-  { name: "解の配置問題", implemented: false },
-];
 
 export default function Home() {
   //画面の全状態を管理している.
@@ -78,10 +47,44 @@ export default function Home() {
     .catch(() => setPrintError("問題一覧の取得に失敗しました"));
   },[]);
 
+  const subjectOptions = Array.from(new Set(types.map((t) => t.subject)))
+    .map((name) => ({ name, implemented: true}));
+
+  const unitOptions = Array.from(
+    new Set(
+      types.filter((t) => t.subject === selectedSubject).map((t) => t.unit)
+    )
+  ).map((name) => ({ name, implemented: true}));
+
+  const subUnitOptions = Array.from(
+    new Set(
+      types.filter((t) => t.subject === selectedSubject && t.unit === selectedUnit).map((t) => t.sub_unit)
+    )
+  ).map((name) => ({ name, implemented: true}));
+
+  const problemOptions = Array.from(
+    new Set(
+      types.filter((t) => t.subject===selectedSubject && t.unit === selectedUnit && t.sub_unit === selectedSubUnit).map((t) => t.label)
+    )
+  ).map((name) => ({ name, implemented: true}))
+
+  const selectedType = types.find(
+    (t) =>
+      t.subject === selectedSubject &&
+      t.unit === selectedUnit &&
+      t.sub_unit === selectedSubUnit &&
+      t.label === selectedProblem
+  )
+
   // アロー関数で書いている. asyncはこの関数内でawaitを使うため必要.
   const handleGeneratePDF = async () => {
     if (numPrints > 100) {
       setPrintError("エラー：上限の100枚を超えています。100枚以内で指定してください。");
+      return;
+    }
+
+    if (!selectedType){
+      setPrintError("エラー : 問題の種類が選択されていません。");
       return;
     }
 
@@ -98,11 +101,11 @@ export default function Home() {
     try {
 
       const seed = Math.floor(Math.random()*1000000000)
-      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&seed=${seed}`);
+      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&seed=${seed}&problem_type=${selectedType.key}`);
       
       // fetchは404や500ときも例外を投げないので自分で確認する必要がある.
       if (!response.ok) {
-        let message = 'サーバーがエラーを返しました (HTTP ${responce.status})';
+        let message = `サーバーがエラーを返しました (HTTP ${response.status})`;
         try
         {
           const data = await response.json();
@@ -170,6 +173,11 @@ export default function Home() {
     );
   };
 
+  const renderWithMath = (text: string) =>
+    text.split("$").map((part,i) =>
+      i%2 === 1 ? <InlineMath key={i} math={part} /> : <span key={i}>{part}</span>
+    );
+
   return (
     <div className="min-h-screen bg-gray-200 text-gray-800 font-sans pb-10">
       <header className="bg-slate-700 text-white p-6 shadow-md">
@@ -190,10 +198,10 @@ export default function Home() {
           {step > 3 && <p className="text-lg text-gray-500 font-medium">{selectedProblem}</p>}
         </div>
 
-        {step === 0 && renderOptions(SUBJECTS, (name) => { setSelectedSubject(name); setStep(1); })}
-        {step === 1 && renderOptions(UNITS, (name) => { setSelectedUnit(name); setStep(2); })}
-        {step === 2 && renderOptions(SUB_UNITS, (name) => { setSelectedSubUnit(name); setStep(3); })}
-        {step === 3 && renderOptions(PROBLEM_TYPES, (name) => { setSelectedProblem(name); setStep(4); })}
+        {step === 0 && renderOptions(subjectOptions, (name) => { setSelectedSubject(name); setStep(1); })}
+        {step === 1 && renderOptions(unitOptions, (name) => { setSelectedUnit(name); setStep(2); })}
+        {step === 2 && renderOptions(subUnitOptions, (name) => { setSelectedSubUnit(name); setStep(3); })}
+        {step === 3 && renderOptions(problemOptions, (name) => { setSelectedProblem(name); setStep(4); })}
 
         {step === 4 && (
           <div className="bg-white shadow-lg rounded-xl p-8">
@@ -253,7 +261,10 @@ export default function Home() {
                 ) : (
                   <div className="flex flex-col justify-center items-center h-full text-center p-6">
                     <div className="text-lg mb-6 font-medium leading-relaxed px-4">
-                      <InlineMath math="y = ax^2 + bx + c" /> と <InlineMath math="x" /> 軸との共有点の座標を求めよ。
+                      {selectedType && renderWithMath(selectedType.instruction)}
+                    </div>
+                    <div className="text-xl mb-6 px-4">
+                      {selectedType && <InlineMath math={selectedType.example} />}
                     </div>
                     <div className="border border-gray-400 p-4 rounded bg-white shadow-sm">
                       <p className="text-sm text-gray-600 leading-relaxed">

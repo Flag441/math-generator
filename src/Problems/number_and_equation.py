@@ -64,6 +64,7 @@ def like_term_value(rng : random.Random):
         label="同類項を整理する",
         title="数と式 同類項の整理と次数・定数項",
         instruction="次の多項式の同類項を整理せよ. また, [ ]内の文字に関して着目したとき,その次数と定数項をいえ.",
+        example="ax^2 + bxy + cy^2 + dx^2 + exy + f \\quad [x]",
         per_page=12,
 )
 def like_term_problem(rng: random.Random):

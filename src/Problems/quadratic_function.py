@@ -20,6 +20,7 @@ def quadratic_value(rng: random.Random):
         label="共有点の座標を求める",
         title="二次関数 グラフと$x$軸の共有点を求める問題",
         instruction="次の二次関数のグラフと$x$軸の共有点の座標を求めよ。",
+        example="y = ax^2 + bx + c",
         per_page=12,
 )
 

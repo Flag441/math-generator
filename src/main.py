@@ -176,6 +176,8 @@ def list_problem_types():
             "sub_unit": spec["sub_unit"],
             "label": spec["label"],
             "per_page": spec["per_page"],
+            "instruction": spec["instruction"],
+            "example": spec["example"],
         }
         for key, spec in problem.REGISTRY.items()
     ]
