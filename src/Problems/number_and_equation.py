@@ -29,6 +29,24 @@ def focus_ordered_latex(total, focus):
         out += " " + sign + " " + body
     return out
 
+def terms_to_latex(terms):
+    """[(係数,単項式), ...]をLaTeX文字列にする"""
+    parts = []
+    for c,m in terms:
+        a = abs(c)
+        if m==1:
+            body = str(a) # 定数項のとき
+        elif a==1:
+            body = latex(m) # 係数が\pm 1のとき
+        else:
+            body = str(a)+latex(m)
+        parts.append(("-" if c<0 else "+",body)) # 符号を考慮してpartsに入れる
+
+    out = parts[0][1] if parts[0][0] == "+" else "-" + parts[0][1] # 先頭の項の+を付けないようにする
+    for sign,body in parts[1:]:
+        out += " " + sign + " " + body
+    return out
+
 def like_term_value(rng : random.Random):
     """同類項の整理と次数・定数項"""
     # 例 : 3x^2+2x-6-4x^2+3x+2 [x] の同類項をまとめよ.また,[]内の文字に着目したとき,その次数と定数項を言え.
@@ -68,14 +86,13 @@ def like_term_value(rng : random.Random):
         left_coeffs.append(a)
         right_coeffs.append(b)
 
-    left = sum(c*m for c,m in zip(left_coeffs,monomials))
-    right = sum(c*m for c,m in zip(right_coeffs,monomials))
-    total = left+right
+    terms = list(zip(left_coeffs,monomials)) + list(zip(right_coeffs,monomials))
+    rng.shuffle(terms)
+    total = sum(c*m for c,m in terms)
 
     p = Poly(total,focus)
     return{
-        "left": left,
-        "right": right,
+        "terms": terms,
         "monomials": monomials,
         "left_coeffs": left_coeffs,
         "right_coeffs": right_coeffs,
@@ -100,7 +117,7 @@ def like_term_problem(rng: random.Random):
     v = like_term_value(rng)
 
     # 辞書から一度取り出しておく（f-string の中に " をネストしないため）
-    left, right   = v["left"], v["right"]
+    terms = v["terms"]
     total, focus  = v["total"], v["focus"]
     degree        = v["degree"]
     constant      = v["constant"]
@@ -109,8 +126,7 @@ def like_term_problem(rng: random.Random):
     right_coeffs  = v["right_coeffs"]
 
     # 問題文: left と right を足さずに並べる（right が負で始まるかで繋ぎ方を変える）
-    r_tex = latex(right)
-    body = latex(left) + (" " + r_tex if r_tex.lstrip().startswith("-") else " + " + r_tex)
+    body = terms_to_latex(terms)
     focus_tex = "\\text{ と }".join(latex(f) for f in focus)
     question = f"{body} \\quad [{focus_tex}]"
 
