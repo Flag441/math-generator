@@ -55,8 +55,10 @@ def like_term_value(rng : random.Random):
     # パターン3 3文字を用いる. [x],[xとy]など2文字に着目するパターンも考える.
     # 4次式を許容すると 4次の項が15個, 3次の項が10個, 2次の項が6個, 1次の項が3個, 及び定数項 の35項出てくる. これは多すぎるので 6~10項で考えようと思う.
     pattern = rng.choice([1,2,3])
-    pattern = 2 # デバック用
     chars = ['x','y','z','s','t','a','b','c']
+    non_zero_coefficient = [n for n in range(-10,11) if n!=0]
+
+    singles = []
     if pattern==1:
         # 1文字だけを使う.
         names = rng.sample(chars,1)
@@ -73,9 +75,15 @@ def like_term_value(rng : random.Random):
         focus = [rng.choice([X, Y])]
     else:
         # 3文字を使う
-        raise NotImplementedError("パターン3は未実装です")
-
-    non_zero_coefficient = [n for n in range(-10,11) if n!=0]
+        names = sorted(rng.sample(chars, 3))
+        X, Y, Z = Symbol(names[0]), Symbol(names[1]), Symbol(names[2])
+        order = [X**2, X*Y, X*Z, X, Y**2, Y*Z, Y, Z**2, Z, 1] #type: ignore
+        # 積の項3つ + どれか1文字の単独項。3個選べば積が必ず2つ入るので3文字が揃う
+        v = rng.choice([X, Y, Z])
+        pool = [X*Y, X*Z, Y*Z, rng.choice([v, v**2])] #type: ignore
+        monomials = sorted(rng.sample(pool, 3), key=order.index)
+        focus = sorted(rng.sample([X, Y, Z], rng.choice([1, 2])), key=str)
+        singles = [(rng.choice(non_zero_coefficient), 1)]
     
     left_coeffs,right_coeffs = [],[]
 
@@ -86,7 +94,7 @@ def like_term_value(rng : random.Random):
         left_coeffs.append(a)
         right_coeffs.append(b)
 
-    terms = list(zip(left_coeffs,monomials)) + list(zip(right_coeffs,monomials))
+    terms = list(zip(left_coeffs,monomials)) + list(zip(right_coeffs,monomials)) + singles
     rng.shuffle(terms)
     total = sum(c*m for c,m in terms)
 
@@ -100,6 +108,7 @@ def like_term_value(rng : random.Random):
         "focus": focus,
         "degree": p.total_degree(),
         "constant": p.coeff_monomial(1),
+        "singles": singles,
     }
 
 @register(
@@ -111,7 +120,7 @@ def like_term_value(rng : random.Random):
         title="数と式 同類項の整理と次数・定数項",
         instruction="次の多項式の同類項を整理せよ. また, [ ]内の文字に関して着目したとき,その次数と定数項をいえ.",
         example="ax^2 + bxy + cy^2 + dx^2 + exy + f \\quad [x]",
-        per_page=12,
+        per_page=10,
 )
 def like_term_problem(rng: random.Random):
     v = like_term_value(rng)
@@ -124,6 +133,7 @@ def like_term_problem(rng: random.Random):
     monomials     = v["monomials"]
     left_coeffs   = v["left_coeffs"]
     right_coeffs  = v["right_coeffs"]
+    singles = v["singles"]
 
     # 問題文: left と right を足さずに並べる（right が負で始まるかで繋ぎ方を変える）
     body = terms_to_latex(terms)
@@ -138,6 +148,10 @@ def like_term_problem(rng: random.Random):
         parts.append(coeff if m == 1 else coeff + latex(m))
     mid_equation = " + ".join(parts)
 
+    for c,m in singles:
+        single_tex = str(abs(c)) if m==1 else str(abs(c)) + latex(m)
+        mid_equation += ("+" if c>0 else "-") + single_tex
+
     # 整理後の式は太字にする（青チャートの体裁）
     step = [
         f"${body}$",
@@ -146,9 +160,9 @@ def like_term_problem(rng: random.Random):
     ]
 
     # 着目する文字について降順に整理した形。1文字のときは total と同じなので省く
-    ordrerd = focus_ordered_latex(total,focus)
-    if ordrerd != latex(total):
-        step.append(f"${focus_tex}$ に着目すると ${ordrerd}$")
+    ordered = focus_ordered_latex(total,focus)
+    if ordered != latex(total):
+        step.append(f"${focus_tex}$ に着目すると ${ordered}$")
 
     answer = f"次数 ${degree}$, 定数項 ${latex(constant)}$"
 

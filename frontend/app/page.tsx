@@ -30,7 +30,6 @@ export default function Home() {
   const [selectedProblem, setSelectedProblem] = useState<string>("");
 
   // 問題数と枚数
-  const [numQuestions, setNumQuestions] = useState<number>(10);
   const [numPrints, setNumPrints] = useState<number>(1);
 
   //生成中か、結果があるか、エラーがあるか
@@ -101,7 +100,7 @@ export default function Home() {
     try {
 
       const seed = Math.floor(Math.random()*1000000000)
-      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${numQuestions}&num_prints=${numPrints}&seed=${seed}&problem_type=${selectedType.key}`);
+      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${selectedType.per_page}&num_prints=${numPrints}&seed=${seed}&problem_type=${selectedType.key}`);
       
       // fetchは404や500ときも例外を投げないので自分で確認する必要がある.
       if (!response.ok) {
@@ -135,7 +134,7 @@ export default function Home() {
     // ダウンロードリンクを作成して,それをクリックしたことにする.
     const a = document.createElement("a");
     a.href = pdfUrl;
-    a.download = `数学プリント_${numQuestions}問_${numPrints}枚.pdf`;
+    a.download = `数学プリント_${selectedType?.per_page ?? 0}問_${numPrints}枚.pdf`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -213,7 +212,7 @@ export default function Home() {
                   </label>
                   <input
                     type="number" 
-                    value={numQuestions} 
+                    value={selectedType ? selectedType.per_page : 10}
                     disabled
                     className="border-2 border-gray-300 rounded-lg p-3 w-full text-lg bg-gray-200 text-gray-500 cursor-not-allowed" 
                   />
