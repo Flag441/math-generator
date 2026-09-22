@@ -161,8 +161,7 @@ def like_term_problem(rng: random.Random):
 
     # 着目する文字について降順に整理した形。1文字のときは total と同じなので省く
     ordered = focus_ordered_latex(total,focus)
-    if ordered != latex(total):
-        step.append(f"${focus_tex}$ に着目すると ${ordered}$")
+    step.append(f"${focus_tex}$ に着目すると ${ordered}$")
 
     answer = f"次数 ${degree}$, 定数項 ${latex(constant)}$"
 
