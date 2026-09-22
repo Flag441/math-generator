@@ -19,6 +19,8 @@ type ProblemType={
   example: string;
 }
 
+const safe = (s: string) => s.replace(/[\\/:*?"<>|]/g, "_");
+
 export default function Home() {
   //画面の全状態を管理している.
   const [step, setStep] = useState<number>(0); //今どの画面にいるか
@@ -126,18 +128,6 @@ export default function Home() {
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const handleDownload = () => {
-    if (!pdfUrl) return; //これがあることで以下pdfUrlがnullであることがない
-
-    // ダウンロードリンクを作成して,それをクリックしたことにする.
-    const a = document.createElement("a");
-    a.href = pdfUrl;
-    a.download = `数学プリント_${selectedType?.per_page ?? 0}問_${numPrints}枚.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
   };
 
   const handleBack = () => {
@@ -283,12 +273,13 @@ export default function Home() {
               </button>
               
               {pdfUrl && (
-                <button
-                  onClick={handleDownload}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-20 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 text-xl mt-4"
+                <a
+                  href={pdfUrl}
+                  download={`${safe(selectedType?.unit ?? "数学")}_${safe(selectedType?.sub_unit ?? "")}_${numPrints}枚.pdf`}
+                  className="inline-block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-20 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 text-xl mt-4"
                 >
                   📥 プレビューのPDFをダウンロード
-                </button>
+                </a>
               )}
             </div>
           </div>
