@@ -178,12 +178,7 @@ export default function Home() {
     );
 
   return (
-    <div className="min-h-screen bg-gray-200 text-gray-800 font-sans pb-10">
-      <header className="bg-slate-700 text-white p-6 shadow-md">
-        <h1 className="text-2xl font-bold text-center tracking-wider">高校数学演習問題自動生成アプリケーション</h1>
-      </header>
-
-      <main className="max-w-6xl mx-auto p-8 mt-6 relative">
+      <main className="w-full max-w-6xl mx-auto p-8 mt-6 relative pb-10">
         {step > 0 && (
           <button onClick={handleBack} className="mb-4 flex items-center text-slate-600 hover:text-slate-900 font-bold transition-colors">
             <span className="mr-2 text-xl">◀</span> 戻る
@@ -297,6 +292,5 @@ export default function Home() {
           </div>
         )}
       </main>
-    </div>
   );
 }
