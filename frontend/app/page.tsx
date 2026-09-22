@@ -141,13 +141,15 @@ export default function Home() {
   };
 
   const handleBack = () => {
-    if (step > 0) {
-      setStep(step - 1);
-      if (step === 4) { //setStepはReactに新しい値を伝えるだけだから実行中の関数は変わらない.次に呼ばれたときに変わる.
-        setPdfUrl(null);
-        setPrintError("");
-      }
+    if(step === 0) return;
+
+    if(step === 4){
+      if(pdfUrl) window.URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+      setPrintError("");
     }
+
+    setStep((prev) => prev-1);
   };
 
   const renderOptions = (options: { name: string; implemented: boolean }[], onSelect: (name: string) => void) => {
