@@ -1,6 +1,7 @@
 import subprocess
 import random
 import tempfile # 並列処理時に一時的にファイルを生成するために必要
+import os
 from fastapi import FastAPI #フレームワーク
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,13 +17,15 @@ TEMPLATE_DIR = Path(__file__).parent.parent/"latex_templates"
 DOCUMENT = (TEMPLATE_DIR / "document.tex").read_text(encoding="utf-8")
 PAGE = (TEMPLATE_DIR / "page.tex").read_text(encoding="utf-8")
 
-# フロントエンド(Next.js)と通信するための設定（CORS）
+ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://math-generator-puce.vercel.app", #本番のフロントエンド
-        "http://localhost:3000", #開発中
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
