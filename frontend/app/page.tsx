@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import "katex/dist/katex.min.css";
 import { InlineMath } from "react-katex";
 
-const API_BASE_URL = process.env.NODE_ENV === "production"
-        ? "https://math-generator-backend.onrender.com" // 本番環境(Render)
-        : "http://localhost:8000"; // 開発環境(自分のパソコン)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 type ProblemType={
   key: string;
