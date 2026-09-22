@@ -203,7 +203,7 @@ export default function Home() {
               <div className="flex-1 space-y-8">
                 <div>
                   <label className="block font-bold text-lg mb-2 text-gray-500">
-                    1枚のプリントに何問生成しますか？ <span className="text-sm font-normal">※現在10問固定です</span>
+                    1枚のプリントに何問生成しますか？ <span className="text-sm font-normal">※現在、問題によって個数を固定しています。</span>
                   </label>
                   <input
                     type="number" 
