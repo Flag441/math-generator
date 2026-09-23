@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import {Noto_Sans_JP} from "next/font/google";
+import Header from "./components/Header"
 import "./globals.css";
+import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,11 +38,7 @@ export default function RootLayout({
       className={`${notoSansJP.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-gray-200 text-gray-800 font-sans">
-        <header className="bg-slate-700 text-white p-6 shadow-md">
-          <h1 className="text-2xl font-bold text-center tracking-wider">
-            高校数学演習問題自動生成アプリケーション
-          </h1>
-        </header>
+        <Header />
         {children}
       </body>
     </html>
