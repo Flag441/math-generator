@@ -115,7 +115,10 @@ export default function Generator({ initialTypes }: { initialTypes: ProblemType[
     try {
 
       const seed = Math.floor(Math.random()*1000000000)
-      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${selectedType.per_page}&num_prints=${numPrints}&seed=${seed}&problem_type=${selectedType.key}`);
+      const response = await fetch(`${API_BASE_URL}/api/generate?num_problems=${selectedType.per_page}&num_prints=${numPrints}&seed=${seed}&problem_type=${selectedType.key}`)
+        .catch(() => {
+            throw new Error("サーバーに接続できませんでした。時間をおいて再度お試しください。");
+        });
       
       // fetchは404や500ときも例外を投げないので自分で確認する必要がある.
       if (!response.ok) {
