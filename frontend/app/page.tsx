@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import "katex/dist/katex.min.css";
 import { InlineMath } from "react-katex";
+import { useCallback } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -36,15 +37,27 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [printError, setPrintError] = useState<string>("");
+  const [listState,setListState] = useState<"loading" | "ready" | "error">("loading");
 
   const [types,setTypes] = useState<ProblemType[]>([]);
 
-  useEffect(() => {
+  const loadTypes = useCallback(() => {
+    setListState("loading");
     fetch(`${API_BASE_URL}/api/problem-types`) //通信して
-    .then((res) => res.json()) //本文をjsonとして解釈して
-    .then((data) => setTypes(data)) //保存する.
-    .catch(() => setPrintError("問題一覧の取得に失敗しました"));
+    .then((res) => {
+      if(res.ok === true) return res.json();
+      else throw new Error();
+    })
+    .then((data) => {
+      setListState("ready");
+      setTypes(data);
+    })
+    .catch(() => setListState("error"));
   },[]);
+
+  useEffect(() => {
+    loadTypes();
+  },[loadTypes]);
 
   const subjectOptions = Array.from(new Set(types.map((t) => t.subject)))
     .map((name) => ({ name, implemented: true}));
@@ -182,7 +195,19 @@ export default function Home() {
           {step > 3 && <p className="text-lg text-gray-500 font-medium">{selectedProblem}</p>}
         </div>
 
-        {step === 0 && renderOptions(subjectOptions, (name) => { setSelectedSubject(name); setStep(1); })}
+        {step==0 && listState=="loading" &&
+          <div className="mt-6">
+            <p className="text-lg text-gray-700 font-medium mb-2">読み込み中…</p>
+            <p className="text-sm text-gray-600">しばらくアクセスが無いとサーバーが停止するため、最初の読み込みに1分ほどかかることがあります。</p>
+          </div>
+        }
+        {step==0 && listState=="error" && 
+          <div className="mt-6">
+              <p className="text-lg text-gray-700 font-medium mb-4">問題の一覧を取得できませんでした。</p>
+              <button onClick={loadTypes} className="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-full shadow-md transition-colors">再試行</button>
+          </div>
+        }
+        {step==0 && listState=="ready" && renderOptions(subjectOptions, (name) => { setSelectedSubject(name); setStep(1); })}
         {step === 1 && renderOptions(unitOptions, (name) => { setSelectedUnit(name); setStep(2); })}
         {step === 2 && renderOptions(subUnitOptions, (name) => { setSelectedSubUnit(name); setStep(3); })}
         {step === 3 && renderOptions(problemOptions, (name) => { setSelectedProblem(name); setStep(4); })}
