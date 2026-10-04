@@ -184,3 +184,8 @@ def list_problem_types():
         }
         for key, spec in problem.REGISTRY.items()
     ]
+
+@app.get("/api/health")
+def health():
+    """サーバーが起動しているかの確認。スリープ状態のサーバーを起動するのにも用いる"""
+    return {"status":"ok"}

@@ -61,6 +61,19 @@ export default function Generator({ initialTypes }: { initialTypes: ProblemType[
     if(initialTypes.length === 0) loadTypes();
   },[loadTypes,initialTypes.length]);
 
+  useEffect(() => {
+    const KEY = "lastWakeUp";
+    const TEN_MINUTES = 10*60*1000;
+
+    try{
+      const last = Number(localStorage.getItem(KEY) ?? 0);
+      if (Date.now()-last < TEN_MINUTES) return;
+      localStorage.setItem(KEY,String(Date.now()));
+    }catch{}
+
+    fetch(`${API_BASE_URL}/api/health`).catch(() => {});
+  }, []);
+
   const subjectOptions = Array.from(new Set(types.map((t) => t.subject)))
     .map((name) => ({ name, implemented: true}));
 
